@@ -103,11 +103,17 @@ The backend currently covers:
 
 - Empty-list search
 - Ordered insertion
+- Boundary insertion at the front and back
 - Deterministic multi-level promotion
+- Multi-level traversal with right and down moves
 - Duplicate insert rejection
+- Missing delete on empty and populated lists
 - Multi-level deletion and top-level pruning
+- Mixed operation sequences that preserve structural correctness
 - Seeded randomness replay
 - API validation failures
+- Duplicate preload rejection on reset
+- Empty payload rejection
 - Reset with seed and preload values
 
 When adding behavior, update both:

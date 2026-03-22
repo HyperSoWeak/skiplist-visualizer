@@ -8,9 +8,6 @@ This monorepo contains the backend service for a skip list visualizer and a rese
 apps/
   backend/   NestJS backend with Swagger, skip list logic, and tests
   frontend/  Placeholder directory only
-docs/
-  backend-api.md
-  plans/
 ```
 
 ## Quick Start
@@ -55,5 +52,4 @@ npm run format
 ## Documentation
 
 - Backend guide: `apps/backend/README.md`
-- API contract notes: `docs/backend-api.md`
-- Implementation plan: `docs/plans/2026-03-22-skiplist-visualizer-backend.md`
+- Interactive API docs: Swagger at `http://localhost:3000/docs`
