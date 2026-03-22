@@ -1,98 +1,129 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Backend Developer Guide
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This backend is a NestJS service that owns the skip list data structure, operation tracing, and Swagger documentation for the skip list visualizer project.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## What This Service Does
 
-## Description
+- Maintains the live skip list structure, including sentinel nodes and vertical towers
+- Executes `find`, `insert`, `delete`, and `reset` operations
+- Records step-by-step animation events that a frontend can replay in order
+- Supports deterministic coin flips through a fixed seed or per-request `flipSequence`
+- Exposes OpenAPI documentation through Swagger
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Project Structure
 
-## Project setup
-
-```bash
-$ npm install
+```text
+src/
+  configure-app.ts                 Shared Nest application configuration
+  skiplist/
+    core/                          Pure skip list data structure and domain mutations
+    dto/                           Request validation DTOs
+    models/                        Response contracts and Swagger models
+    skiplist-operation-recorder.ts Maps domain mutations into animation steps
+    skiplist.controller.ts         HTTP endpoints
+    skiplist.service.ts            Application service boundary
+test/
+  skiplist-core.spec.ts            Core data structure tests
+  skiplist.e2e-spec.ts             API-level integration tests
 ```
 
-## Compile and run the project
+## Local Development
+
+Install dependencies from the monorepo root:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
+Run the backend in watch mode from the monorepo root:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run start:dev
 ```
 
-## Deployment
+The API starts on `http://localhost:3000` by default.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Swagger UI is available at:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+```text
+http://localhost:3000/docs
+```
+
+## Useful Commands
+
+Run these commands from the monorepo root unless you intentionally work inside `apps/backend`.
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run build
+npm run lint
+npm run test
+npm run test:e2e
+npm run format
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+If you want to run backend scripts directly:
 
-## Resources
+```bash
+npm run build --workspace backend
+npm run test --workspace backend -- --runInBand
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+## Deterministic Behavior
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+The backend supports two deterministic modes for insert promotions:
 
-## Support
+1. Fixed seed
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Use `POST /reset` with a `seed` value. All later inserts will use the seeded pseudo-random generator until the next reset.
 
-## Stay in touch
+2. Explicit flip sequence
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Use `POST /insert` with `flipSequence`, for example:
 
-## License
+```json
+{
+  "value": 42,
+  "flipSequence": [true, true, false]
+}
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+The inserted node appears on the bottom layer first, then each `true` adds one more promoted layer. The first `false` stops the tower growth. If the sequence ends, promotion stops.
+
+## Architecture Notes
+
+- `core/skip-list.ts` does not know about HTTP or Swagger. It only mutates the data structure and returns domain-level facts.
+- `skiplist-operation-recorder.ts` converts those domain facts into animation-friendly step objects.
+- Controller and DTO layers only handle transport concerns such as validation and API metadata.
+
+This separation is important. If you add a new animation event, prefer extending the recorder instead of mixing UI playback logic into the core skip list implementation.
+
+## Testing Strategy
+
+The backend currently covers:
+
+- Empty-list search
+- Ordered insertion
+- Deterministic multi-level promotion
+- Duplicate insert rejection
+- Multi-level deletion and top-level pruning
+- Seeded randomness replay
+- API validation failures
+- Reset with seed and preload values
+
+When adding behavior, update both:
+
+- core tests for data structure correctness
+- e2e tests for HTTP contract and response shape
+
+## Commit Convention
+
+Use Conventional Commits. Examples:
+
+```text
+feat: add batch insert endpoint
+fix: correct top-level pruning after delete
+docs: document deterministic replay workflow
+test: cover delete on empty skip list
+```
+
+Keep commits scoped to one meaningful change. This repository intentionally records large milestones as separate commits.
