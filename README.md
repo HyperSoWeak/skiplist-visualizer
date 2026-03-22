@@ -13,8 +13,8 @@ apps/
 ## Quick Start
 
 ```bash
-npm install
-npm run start:dev
+pnpm install
+pnpm start:dev
 ```
 
 Backend API:
@@ -34,12 +34,12 @@ http://localhost:3000/docs
 Run from the repository root:
 
 ```bash
-npm run build
-npm run start:dev
-npm run lint
-npm run test
-npm run test:e2e
-npm run format
+pnpm build
+pnpm start:dev
+pnpm lint
+pnpm test
+pnpm test:e2e
+pnpm format
 ```
 
 ## Development Rules

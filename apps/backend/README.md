@@ -32,13 +32,13 @@ test/
 Install dependencies from the monorepo root:
 
 ```bash
-npm install
+pnpm install
 ```
 
 Run the backend in watch mode from the monorepo root:
 
 ```bash
-npm run start:dev
+pnpm start:dev
 ```
 
 The API starts on `http://localhost:3000` by default.
@@ -54,18 +54,18 @@ http://localhost:3000/docs
 Run these commands from the monorepo root unless you intentionally work inside `apps/backend`.
 
 ```bash
-npm run build
-npm run lint
-npm run test
-npm run test:e2e
-npm run format
+pnpm build
+pnpm lint
+pnpm test
+pnpm test:e2e
+pnpm format
 ```
 
 If you want to run backend scripts directly:
 
 ```bash
-npm run build --workspace backend
-npm run test --workspace backend -- --runInBand
+pnpm --filter backend build
+pnpm --filter backend test --runInBand
 ```
 
 ## Deterministic Behavior
