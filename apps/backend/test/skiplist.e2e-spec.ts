@@ -22,6 +22,18 @@ describe('SkipList API (e2e)', () => {
     return response.body as OperationResult;
   }
 
+  async function insertValue(
+    value: number,
+    flipSequence?: boolean[],
+  ): Promise<OperationResult> {
+    const response = await request(httpServer)
+      .post('/insert')
+      .send(flipSequence ? { value, flipSequence } : { value })
+      .expect(200);
+
+    return operationBody(response);
+  }
+
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -46,11 +58,7 @@ describe('SkipList API (e2e)', () => {
   });
 
   it('inserts with deterministic flip results and exposes the final structure', async () => {
-    const response = await request(httpServer)
-      .post('/insert')
-      .send({ value: 42, flipSequence: [true, false] })
-      .expect(200);
-    const body = operationBody(response);
+    const body = await insertValue(42, [true, false]);
 
     expect(body.success).toBe(true);
     expect(body.coinFlips).toEqual([true, false]);
@@ -59,15 +67,32 @@ describe('SkipList API (e2e)', () => {
     expect(body.steps.some((step) => step.type === 'add_level')).toBe(true);
   });
 
+  it('keeps API state sorted when inserting values at both boundaries', async () => {
+    await insertValue(20, [false]);
+    await insertValue(40, [false]);
+    const frontInsert = await insertValue(10, [false]);
+    const backInsert = await insertValue(50, [false]);
+
+    expect(frontInsert.finalState?.values).toEqual([10, 20, 40]);
+    expect(backInsert.finalState?.values).toEqual([10, 20, 40, 50]);
+  });
+
+  it('returns a structured business error when inserting a duplicate value', async () => {
+    await insertValue(15, [false]);
+    const duplicateInsert = await insertValue(15, [true, true, false]);
+
+    expect(duplicateInsert.success).toBe(false);
+    expect(duplicateInsert.showAlert).toBe(true);
+    expect(duplicateInsert.message).toContain('already exists');
+    expect(duplicateInsert.steps.some((step) => step.type === 'error')).toBe(
+      true,
+    );
+    expect(duplicateInsert.finalState?.values).toEqual([15]);
+  });
+
   it('finds and reports missing values with animation completion', async () => {
-    await request(httpServer)
-      .post('/insert')
-      .send({ value: 10, flipSequence: [false] })
-      .expect(200);
-    await request(httpServer)
-      .post('/insert')
-      .send({ value: 25, flipSequence: [false] })
-      .expect(200);
+    await insertValue(10, [false]);
+    await insertValue(25, [false]);
 
     const response = await request(httpServer)
       .post('/find')
@@ -80,19 +105,30 @@ describe('SkipList API (e2e)', () => {
     expect(body.steps.at(-1)?.type).toBe('complete');
   });
 
+  it('returns traversal steps for a successful multi-level find', async () => {
+    await insertValue(10, [true, false]);
+    await insertValue(20, [false]);
+    await insertValue(30, [true, true, false]);
+    await insertValue(40, [false]);
+
+    const response = await request(httpServer)
+      .post('/find')
+      .send({ value: 40 })
+      .expect(200);
+    const body = operationBody(response);
+    const stepTypes = body.steps.map((step) => step.type);
+
+    expect(body.success).toBe(true);
+    expect(stepTypes).toContain('move_right');
+    expect(stepTypes).toContain('move_down');
+    expect(stepTypes).toContain('found');
+    expect(stepTypes.at(-1)).toBe('complete');
+  });
+
   it('deletes a multi-level tower and removes empty top levels', async () => {
-    await request(httpServer)
-      .post('/insert')
-      .send({ value: 10, flipSequence: [false] })
-      .expect(200);
-    await request(httpServer)
-      .post('/insert')
-      .send({ value: 20, flipSequence: [true, true, false] })
-      .expect(200);
-    await request(httpServer)
-      .post('/insert')
-      .send({ value: 30, flipSequence: [false] })
-      .expect(200);
+    await insertValue(10, [false]);
+    await insertValue(20, [true, true, false]);
+    await insertValue(30, [false]);
 
     const response = await request(httpServer)
       .post('/delete')
@@ -104,6 +140,25 @@ describe('SkipList API (e2e)', () => {
     expect(body.finalState?.height).toBe(1);
     expect(body.finalState?.values).toEqual([10, 30]);
     expect(body.steps.some((step) => step.type === 'remove_level')).toBe(true);
+  });
+
+  it('reports a business error when deleting a missing value and keeps state unchanged', async () => {
+    await insertValue(10, [false]);
+    await insertValue(20, [true, false]);
+
+    const beforeDelete = stateBody(
+      await request(httpServer).get('/state').expect(200),
+    );
+    const response = await request(httpServer)
+      .post('/delete')
+      .send({ value: 999 })
+      .expect(200);
+    const body = operationBody(response);
+
+    expect(body.success).toBe(false);
+    expect(body.showAlert).toBe(true);
+    expect(body.steps.some((step) => step.type === 'error')).toBe(true);
+    expect(body.finalState).toEqual(beforeDelete);
   });
 
   it('resets the list with a seed and preloaded values', async () => {
@@ -118,6 +173,48 @@ describe('SkipList API (e2e)', () => {
     expect(body.finalState?.values).toEqual([3, 7]);
   });
 
+  it('replays the same seeded reset and insert sequence into the same state', async () => {
+    const firstReset = operationBody(
+      await request(httpServer)
+        .post('/reset')
+        .send({ seed: 77, values: [5, 10, 15] })
+        .expect(200),
+    );
+
+    const firstInsert = await insertValue(25);
+    const firstDelete = operationBody(
+      await request(httpServer).post('/delete').send({ value: 10 }).expect(200),
+    );
+
+    const secondReset = operationBody(
+      await request(httpServer)
+        .post('/reset')
+        .send({ seed: 77, values: [5, 10, 15] })
+        .expect(200),
+    );
+
+    const secondInsert = await insertValue(25);
+    const secondDelete = operationBody(
+      await request(httpServer).post('/delete').send({ value: 10 }).expect(200),
+    );
+
+    expect(firstReset.finalState).toEqual(secondReset.finalState);
+    expect(firstInsert.coinFlips).toEqual(secondInsert.coinFlips);
+    expect(firstDelete.finalState).toEqual(secondDelete.finalState);
+  });
+
+  it('rejects duplicate values in reset preload input', async () => {
+    const response = await request(httpServer)
+      .post('/reset')
+      .send({ seed: 1, values: [4, 4] })
+      .expect(400);
+    const body = operationBody(response);
+
+    expect(body.success).toBe(false);
+    expect(body.actionType).toBe('validation');
+    expect(body.message).toContain('All values');
+  });
+
   it('returns a structured validation error for invalid input', async () => {
     const response = await request(httpServer)
       .post('/insert')
@@ -128,5 +225,17 @@ describe('SkipList API (e2e)', () => {
     expect(body.success).toBe(false);
     expect(body.actionType).toBe('validation');
     expect(body.showAlert).toBe(true);
+  });
+
+  it('rejects an empty insert payload', async () => {
+    const response = await request(httpServer)
+      .post('/insert')
+      .send({})
+      .expect(400);
+    const body = operationBody(response);
+
+    expect(body.success).toBe(false);
+    expect(body.actionType).toBe('validation');
+    expect(body.message).toContain('value');
   });
 });
