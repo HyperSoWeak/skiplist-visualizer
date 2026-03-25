@@ -16,6 +16,11 @@ function flattenValidationErrors(errors: ValidationError[]): string[] {
 }
 
 export function configureApp(app: INestApplication): void {
+  app.enableCors({
+    origin: 'http://127.0.0.1:5173', // Allow only this origin
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Allow cookies if needed
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
