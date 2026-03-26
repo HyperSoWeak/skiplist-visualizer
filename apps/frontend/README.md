@@ -1,16 +1,57 @@
-# React + Vite
+# Frontend Developer Guide
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This frontend is a **React 19** application built with **Vite** and **Tailwind CSS 4**. It serves as the interactive visualizer for the skip list data structure, consuming animation steps from the NestJS backend.
 
-Currently, two official plugins are available:
+## What This Project Does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Interactive Visualization:** Renders the skip list layers, nodes, and edges in a grid-like structure.
+- **Operation Control:** Provides a UI for users to trigger `find`, `insert`, `delete`, and `reset` operations.
+- **Animation Playback:** Replays step-by-step events (e.g., `add_level`, `split_arrow`) received from the backend.
 
-## React Compiler
+## Project Structure
+```
+frontend/
+├── public/                # Static assets (favicons, background images)
+├── src/
+│   ├── assets/            # Project-specific images and SVG vectors
+│   ├── components/        # React components
+│   │   ├── SkipListGrid.tsx       # Layout and grid for the skip list nodes
+│   │   └── SkipListVisualizer.tsx # Core visualization logic and animations
+│   ├── data/
+│   │   └── data.ts        # Mock data or initial state constants
+│   ├── types/
+│   │   └── types.ts       # Shared TypeScript interfaces and enums
+│   ├── App.jsx            
+│   ├── App.css            
+│   ├── index.css          
+│   └── main.jsx           
+├── eslint.config.js       
+├── index.html             
+├── package.json           
+├── vite.config.js         
+└── .prettierrc            
+```
+## Local Development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Install dependencies
 
-## Expanding the ESLint configuration
+```bash
+pnpm install
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Run the frontend in development mode:
+
+```bash
+pnpm dev
+```
+
+The application will be available at `http://127.0.0.1:5173`.
+
+
+### Useful Commands
+```bash
+pnpm build      # Production build
+pnpm lint       # Run ESLint check
+pnpm format     # Run Prettier (auto-sorts Tailwind classes)
+pnpm preview    # Locally preview production build
+```
