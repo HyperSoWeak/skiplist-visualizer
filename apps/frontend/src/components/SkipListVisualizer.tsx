@@ -96,10 +96,6 @@ export default function SkipListVisualizer() {
       }
       fetchFind();
     } else if (modalConfig.type === 'insert') {
-      if (skipList.values.includes(val)) {
-        setCurrentMessage(`Error: ${val} already exists.`);
-        return;
-      }
       async function fetchInsert() {
         const res = await fetch(`${API_BASE}/insert`, {
           method: 'POST',
@@ -111,10 +107,6 @@ export default function SkipListVisualizer() {
       }
       fetchInsert();
     } else if (modalConfig.type === 'delete') {
-      if (!skipList.values.includes(val)) {
-        setCurrentMessage(`Error: ${val} not found.`);
-        return;
-      }
       async function fetchDelete() {
         const res = await fetch(`${API_BASE}/delete`, {
           method: 'POST',
