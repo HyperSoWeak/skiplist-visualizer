@@ -85,10 +85,9 @@ export default function SkipListVisualizer() {
     setInsertingValue(null);
     setDeletedNodes({});
     setIsAnimating(false);
-    setCurrentMessage('Ready');
   };
   const handleActionSubmit = () => {
-    const val = parseInt(modalConfig.inputValue, 10);
+    const val = parseInt(modalConfig.inputValue);
     if (isNaN(val)) return;
     setModalConfig((prev) => ({ ...prev, isOpen: false }));
 
@@ -100,7 +99,12 @@ export default function SkipListVisualizer() {
           body: JSON.stringify({ value: val }),
         });
         const data: OperationResult = await res.json();
-        playAnimation(data);
+        await playAnimation(data);
+        if (data.success) {
+          setCurrentMessage(`Value ${val} found in skip-list!`);
+        } else {
+          setCurrentMessage(`Value ${val} not found in skip-list.`);
+        }
       }
       fetchFind();
     } else if (modalConfig.type === 'insert') {
@@ -111,7 +115,14 @@ export default function SkipListVisualizer() {
           body: JSON.stringify({ value: val }),
         });
         const data: OperationResult = await res.json();
-        playAnimation(data);
+        await playAnimation(data);
+        if (data.success) {
+          setCurrentMessage(`Value ${val} inserted successfully!`);
+        } else {
+          setCurrentMessage(
+            `${val} already exists in skip-list. Failed to insert.`,
+          );
+        }
       }
       fetchInsert();
     } else if (modalConfig.type === 'delete') {
@@ -122,7 +133,12 @@ export default function SkipListVisualizer() {
           body: JSON.stringify({ value: val }),
         });
         const data: OperationResult = await res.json();
-        playAnimation(data);
+        await playAnimation(data);
+        if (data.success) {
+          setCurrentMessage(`Value ${val} deleted successfully!`);
+        } else {
+          setCurrentMessage(`${val} not found in skip-list. Failed to delete.`);
+        }
       }
       fetchDelete();
     }
@@ -134,7 +150,8 @@ export default function SkipListVisualizer() {
         method: 'POST',
       });
       const data: OperationResult = await res.json();
-      playAnimation(data);
+      await playAnimation(data);
+      setCurrentMessage('Skip-list has been reset.');
     }
     fetchReset();
   };
@@ -153,7 +170,7 @@ export default function SkipListVisualizer() {
     <div className="min-h-screen bg-slate-50 p-8 font-sans text-slate-800">
       <div className="mx-auto max-w-6xl space-y-8">
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h1 className="mb-2 text-2xl font-bold">Skip List Visualizer</h1>
+          <h1 className="mb-2 text-2xl font-bold">Skip-List Visualizer</h1>
           <div className="flex items-center gap-3">
             <span
               className={`relative inline-flex h-3 w-3 rounded-full ${isAnimating ? 'animate-pulse bg-blue-500' : 'bg-slate-300'}`}
@@ -183,7 +200,7 @@ export default function SkipListVisualizer() {
                   inputValue: '',
                 })
               }
-              className="flex-1 rounded-lg bg-blue-600 py-3 font-semibold text-white capitalize transition-colors hover:bg-blue-700 disabled:opacity-50"
+              className="flex-1 cursor-pointer rounded-lg bg-blue-600 py-3 font-semibold text-white capitalize transition-colors hover:bg-blue-700 disabled:opacity-50"
             >
               {action}
             </button>
@@ -191,7 +208,7 @@ export default function SkipListVisualizer() {
           <button
             disabled={isAnimating}
             onClick={() => handleReset()}
-            className="flex-1 rounded-lg bg-slate-600 py-3 font-semibold text-white transition-colors hover:bg-slate-700 disabled:opacity-50"
+            className="flex-1 cursor-pointer rounded-lg bg-slate-600 py-3 font-semibold text-white transition-colors hover:bg-slate-700 disabled:opacity-50"
           >
             Reset
           </button>
@@ -207,8 +224,9 @@ export default function SkipListVisualizer() {
             <input
               type="number"
               autoFocus
+              step="1"
               className="mb-4 w-full rounded-lg border-2 border-slate-200 p-3 text-lg focus:border-blue-500 focus:outline-none"
-              placeholder="Enter a decimal number..."
+              placeholder="Enter an integer..."
               value={modalConfig.inputValue}
               onChange={(e) =>
                 setModalConfig((prev) => ({
@@ -223,13 +241,13 @@ export default function SkipListVisualizer() {
                 onClick={() =>
                   setModalConfig((prev) => ({ ...prev, isOpen: false }))
                 }
-                className="rounded-lg px-4 py-2 text-slate-500 hover:bg-slate-100"
+                className="cursor-pointer rounded-lg px-4 py-2 text-slate-500 hover:bg-slate-100"
               >
                 Cancel
               </button>
               <button
                 onClick={handleActionSubmit}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-white capitalize hover:bg-blue-700"
+                className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-white capitalize hover:bg-blue-700"
               >
                 {modalConfig.type}
               </button>
