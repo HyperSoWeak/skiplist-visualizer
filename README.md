@@ -14,7 +14,7 @@ apps/
 
 ```bash
 pnpm install
-pnpm dev      # starts both backend and backend
+pnpm dev      # starts both frontend and backend
 ```
 
 Backend API:
