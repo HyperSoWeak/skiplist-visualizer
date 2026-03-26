@@ -8,6 +8,8 @@ const API_BASE = 'http://localhost:3000';
 export default function SkipListVisualizer() {
   const [skipList, setSkipList] = useState<SkipListState>(MOCK_INITIAL_STATE);
   const [nodeStates, setNodeStates] = useState<Record<string, NodeVisualState>>({});
+  const [insertingValue, setInsertingValue] = useState<number | null>(null);
+  const [activeLevels, setActiveLevels] = useState<Record<number, boolean>>({});
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentMessage, setCurrentMessage] = useState('Ready');
   
@@ -16,25 +18,51 @@ export default function SkipListVisualizer() {
   // Playback Engine processes steps from OperationRecorder
   const playAnimation = async (result: OperationResult) => {
     setIsAnimating(true);
-    setNodeStates({}); 
+    setNodeStates({});
+    setInsertingValue(null);
+    setActiveLevels({});
 
     for (const step of result.steps) {
       setCurrentMessage(step.message);
-      
-      if (step.stateChanges && step.stateChanges.length > 0) {
+
+      // Handle structural intermediate steps
+      if (step.structureChange?.type === 'insert_node') {
+        setInsertingValue(result.targetValue);
+        setActiveLevels(prev => ({ ...prev, [step.structureChange!.level!]: true }));
+      }
+
+      // Apply coloring/highlights
+      if (step.stateChanges) {
         setNodeStates(prev => {
           const next = { ...prev };
-          step.stateChanges.forEach(sc => { next[sc.nodeId] = sc.state; });
+          step.stateChanges.forEach(sc => {
+            next[sc.nodeId] = sc.state;
+          });
           return next;
         });
       }
-      await new Promise(resolve => setTimeout(resolve, 800));
+
+      await new Promise(r => setTimeout(r, 800));
     }
 
-    if (result.finalState) setSkipList(result.finalState);
-    setIsAnimating(false);
-  };
+    // --- CLEANUP PHASE ---
+    
+    // 1. Sync the final data structure
+    if (result.finalState) {
+      setSkipList(result.finalState);
+    }
 
+    // 2. Wait a moment so the user sees the 'Complete' state
+    await new Promise(r => setTimeout(r, 1000));
+
+    // 3. Remove all visual state (turn back to default)
+    setNodeStates({});      // Clears all colors
+    setActiveLevels({});   // Resets virtual node tracking
+    setInsertingValue(null); // Removes the temporary column
+    
+    setIsAnimating(false);
+    setCurrentMessage("Ready");
+  };
   const handleActionSubmit = () => {
     const val = parseInt(modalConfig.inputValue, 10);
     if (isNaN(val)) return;
@@ -108,7 +136,12 @@ export default function SkipListVisualizer() {
         </div>
 
         {/* Grid Component */}
-        <SkipListGrid skipList={skipList} nodeStates={nodeStates} />
+        <SkipListGrid 
+          skipList={skipList} 
+          nodeStates={nodeStates} 
+          insertingValue={insertingValue} 
+          activeLevels={activeLevels} 
+        />
 
         {/* Controls */}
         <div className="flex gap-4">

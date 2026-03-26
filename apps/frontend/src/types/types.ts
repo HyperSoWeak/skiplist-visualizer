@@ -32,6 +32,7 @@ export interface SkipListState {
 
 export interface OperationResult {
   success: boolean;
+  targetValue: number | null;
   message: string;
   steps: OperationStep[];
   finalState: SkipListState | null;
