@@ -10,8 +10,14 @@ interface SkipListGridProps {
   activeLevels: Record<number, boolean>;
 }
 
-export function SkipListGrid({ skipList, visualHeight, nodeStates, deletedNodes, insertingValue, activeLevels }: SkipListGridProps) {
-  
+export function SkipListGrid({
+  skipList,
+  visualHeight,
+  nodeStates,
+  deletedNodes,
+  insertingValue,
+  activeLevels,
+}: SkipListGridProps) {
   const columns = useMemo(() => {
     const valSet = new Set(skipList.values);
     if (insertingValue !== null) valSet.add(insertingValue);
@@ -19,50 +25,66 @@ export function SkipListGrid({ skipList, visualHeight, nodeStates, deletedNodes,
   }, [skipList.values, insertingValue]);
 
   return (
-    <div className="bg-white p-12 rounded-3xl border border-slate-200 overflow-x-auto shadow-sm transition-all duration-700">
-      <div 
-        className="grid gap-y-12 gap-x-0 items-center justify-items-center min-w-max"
-        style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(100px, 1fr))` }}
+    <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-white p-12 shadow-sm transition-all duration-700">
+      <div
+        className="grid min-w-max items-center justify-items-center gap-x-0 gap-y-12"
+        style={{
+          gridTemplateColumns: `repeat(${columns.length}, minmax(100px, 1fr))`,
+        }}
       >
-        {[...Array(visualHeight)].map((_, i) => visualHeight - 1 - i).map(lvl => (
-          <React.Fragment key={`lvl-${lvl}`}>
-            {columns.map((colValue, colIdx) => {
-              const node = skipList.levels.find((l: any) => l.level === lvl)?.nodes.find((n: any) => 
-                (colValue === 'start' && n.kind === 'start') ||
-                (colValue === 'end' && n.kind === 'end') ||
-                (n.numericValue === colValue)
-              );
+        {[...Array(visualHeight)]
+          .map((_, i) => visualHeight - 1 - i)
+          .map((lvl) => (
+            <React.Fragment key={`lvl-${lvl}`}>
+              {columns.map((colValue, colIdx) => {
+                const node = skipList.levels
+                  .find((l: any) => l.level === lvl)
+                  ?.nodes.find(
+                    (n: any) =>
+                      (colValue === 'start' && n.kind === 'start') ||
+                      (colValue === 'end' && n.kind === 'end') ||
+                      n.numericValue === colValue,
+                  );
 
-              const isStartEnd = colValue === 'start' || colValue === 'end';
-              const isVirtualInsert = colValue === insertingValue && activeLevels[lvl];
-              
-              // 2. Logic: Hide the node if it's in the deletedNodes set
-              const isDeleted = node && deletedNodes[lvl]?.has(node.id);
-              
-              const shouldShowNode = (node || isStartEnd || isVirtualInsert) && !isDeleted;
-              const displayId = node?.id || `v-${colValue}-${lvl}`;
+                const isStartEnd = colValue === 'start' || colValue === 'end';
+                const isVirtualInsert =
+                  colValue === insertingValue && activeLevels[lvl];
 
-              return (
-                <div key={`${lvl}-${colIdx}`} className="w-full flex items-center justify-center relative h-16">
-                  {/* The continuous edge always exists in the background */}
-                  <div className="absolute w-full h-0.5 bg-slate-200 z-0"></div>
+                const isDeleted = node && deletedNodes[lvl]?.has(node.id);
 
-                  <div className={`
-                    w-14 h-14 flex items-center justify-center border-2 rounded-xl font-bold z-10 
-                    transition-all duration-500 ease-in-out
-                    ${shouldShowNode ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}
-                    ${nodeStates[displayId] === 'visited' ? 'bg-blue-500 border-blue-600 text-white' : 
-                      nodeStates[displayId] === 'next' ? 'bg-yellow-400 border-yellow-500' :
-                      nodeStates[displayId] === 'found' ? 'bg-green-500 border-green-600 text-white' : 
-                      'bg-white border-slate-300 text-slate-600'}
-                  `}>
-                    {colValue === 'start' ? '-∞' : colValue === 'end' ? '+∞' : colValue}
+                const shouldShowNode =
+                  (node || isStartEnd || isVirtualInsert) && !isDeleted;
+                const displayId = node?.id || `v-${colValue}-${lvl}`;
+
+                return (
+                  <div
+                    key={`${lvl}-${colIdx}`}
+                    className="relative flex h-16 w-full items-center justify-center"
+                  >
+                    <div className="absolute z-0 h-0.5 w-full bg-slate-200"></div>
+
+                    <div
+                      className={`z-10 flex h-14 w-14 items-center justify-center rounded-xl border-2 font-bold transition-all duration-500 ease-in-out ${shouldShowNode ? 'scale-100 opacity-100' : 'scale-50 opacity-0'} ${
+                        nodeStates[displayId] === 'visited'
+                          ? 'border-blue-600 bg-blue-500 text-white'
+                          : nodeStates[displayId] === 'next'
+                            ? 'border-yellow-500 bg-yellow-400'
+                            : nodeStates[displayId] === 'found'
+                              ? 'border-green-600 bg-green-500 text-white'
+                              : 'border-slate-300 bg-white text-slate-600'
+                      } `}
+                    >
+                      {colValue === 'start'
+                        ? '-∞'
+                        : colValue === 'end'
+                          ? '+∞'
+                          : colValue}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </React.Fragment>
-        ))}
+                );
+              })}
+            </React.Fragment>
+          ))}
       </div>
     </div>
   );

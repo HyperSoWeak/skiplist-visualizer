@@ -1,5 +1,38 @@
 export type NodeVisualState = 'default' | 'visited' | 'next' | 'found';
-export type StepType = 'visit' | 'inspect_next' | 'move_right' | 'move_down' | 'found' | 'not_found' | 'insert_node' | 'delete_node' | 'split_arrow' | 'merge_arrow' | 'promote_node' | 'add_level' | 'remove_level' | 'error' | 'complete' | 'reset';
+export type StepType =
+  | 'visit'
+  | 'inspect_next'
+  | 'move_right'
+  | 'move_down'
+  | 'found'
+  | 'not_found'
+  | 'insert_node'
+  | 'delete_node'
+  | 'split_arrow'
+  | 'merge_arrow'
+  | 'promote_node'
+  | 'add_level'
+  | 'remove_level'
+  | 'error'
+  | 'complete'
+  | 'reset';
+export type StructureChangeType =
+  | 'insert_node'
+  | 'delete_node'
+  | 'split_arrow'
+  | 'merge_arrow'
+  | 'promote_node'
+  | 'add_level'
+  | 'remove_level';
+
+export interface StructureChange {
+  type: StructureChangeType;
+  level: number;
+  nodeId?: string;
+  fromNodeId?: string;
+  throughNodeId?: string;
+  toNodeId?: string;
+}
 
 export interface OperationStep {
   index: number;
@@ -7,7 +40,7 @@ export interface OperationStep {
   message: string;
   nodeIds: string[];
   stateChanges: { nodeId: string; state: NodeVisualState }[];
-  structureChange?: any; // Simplified for frontend usage
+  structureChange?: StructureChange;
 }
 
 export interface SerializedNode {
