@@ -15,7 +15,7 @@ export default function SkipListVisualizer() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentMessage, setCurrentMessage] = useState('Ready');
   
-  const [modalConfig, setModalConfig] = useState<{ isOpen: boolean, type: 'find' | 'insert' | 'delete', inputValue: string }>({ isOpen: false, type: 'find', inputValue: '' });
+  const [modalConfig, setModalConfig] = useState<{ isOpen: boolean, type: 'find' | 'insert' | 'delete' | 'reset', inputValue: string }>({ isOpen: false, type: 'find', inputValue: '' });
 
   // Playback Engine processes steps from OperationRecorder
   const playAnimation = async (result: OperationResult) => {
@@ -128,6 +128,17 @@ export default function SkipListVisualizer() {
     }
   };
 
+  const handleReset = () => {
+    async function fetchReset() {
+    const res = await fetch(`${API_BASE}/reset`, {
+      method: 'POST',
+    });
+    const data: OperationResult = await res.json();
+    playAnimation(data);
+  }
+  fetchReset();
+  }
+
   useEffect(() => {
     async function fetchInitialState() {
       const res = await fetch(`${API_BASE}/state`);
@@ -175,7 +186,7 @@ export default function SkipListVisualizer() {
           ))}
           <button 
             disabled={isAnimating} 
-            onClick={() => playAnimation(MOCK_RESET)} 
+            onClick={() => handleReset()} 
             className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-lg font-semibold disabled:opacity-50 transition-colors"
           >
             Reset
