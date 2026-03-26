@@ -7,6 +7,7 @@ const API_BASE = 'http://localhost:3000';
 
 export default function SkipListVisualizer() {
   const [skipList, setSkipList] = useState<SkipListState>(MOCK_INITIAL_STATE);
+  const [visualHeight, setVisualHeight] = useState(MOCK_INITIAL_STATE.height);
   const [nodeStates, setNodeStates] = useState<Record<string, NodeVisualState>>({});
   const [insertingValue, setInsertingValue] = useState<number | null>(null);
   const [activeLevels, setActiveLevels] = useState<Record<number, boolean>>({});
@@ -21,12 +22,16 @@ export default function SkipListVisualizer() {
     setNodeStates({});
     setInsertingValue(null);
     setActiveLevels({});
+    setVisualHeight(skipList.height);
 
     for (const step of result.steps) {
       setCurrentMessage(step.message);
 
       // Handle structural intermediate steps
-      if (step.structureChange?.type === 'insert_node') {
+      if (step.structureChange?.type === 'add_level') {
+          // Increase height dynamically
+          setVisualHeight(prev => prev + 1);
+      } else if (step.structureChange?.type === 'insert_node') {
         setInsertingValue(result.targetValue);
         setActiveLevels(prev => ({ ...prev, [step.structureChange!.level!]: true }));
       }
@@ -50,6 +55,7 @@ export default function SkipListVisualizer() {
     // 1. Sync the final data structure
     if (result.finalState) {
       setSkipList(result.finalState);
+      setVisualHeight(result.finalState.height);
     }
 
     // 2. Wait a moment so the user sees the 'Complete' state
@@ -118,6 +124,7 @@ export default function SkipListVisualizer() {
       const res = await fetch(`${API_BASE}/state`);
       const data = await res.json();
       setSkipList(data);
+      setVisualHeight(data.height);
     }
     fetchInitialState();
   }, []);
@@ -141,6 +148,7 @@ export default function SkipListVisualizer() {
           nodeStates={nodeStates} 
           insertingValue={insertingValue} 
           activeLevels={activeLevels} 
+          visualHeight={visualHeight}
         />
 
         {/* Controls */}
