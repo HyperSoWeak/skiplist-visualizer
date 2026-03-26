@@ -10,6 +10,7 @@ export default function SkipListVisualizer() {
   const [visualHeight, setVisualHeight] = useState(MOCK_INITIAL_STATE.height);
   const [nodeStates, setNodeStates] = useState<Record<string, NodeVisualState>>({});
   const [insertingValue, setInsertingValue] = useState<number | null>(null);
+  const [deletedNodes, setDeletedNodes] = useState<Record<number, Set<string>>>({});
   const [activeLevels, setActiveLevels] = useState<Record<number, boolean>>({});
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentMessage, setCurrentMessage] = useState('Ready');
@@ -21,6 +22,7 @@ export default function SkipListVisualizer() {
     setIsAnimating(true);
     setNodeStates({});
     setInsertingValue(null);
+    setDeletedNodes({});
     setActiveLevels({});
     setVisualHeight(skipList.height);
 
@@ -34,6 +36,13 @@ export default function SkipListVisualizer() {
       } else if (step.structureChange?.type === 'insert_node') {
         setInsertingValue(result.targetValue);
         setActiveLevels(prev => ({ ...prev, [step.structureChange!.level!]: true }));
+      } else if (step.structureChange?.type === 'delete_node') {
+        setDeletedNodes(prev => ({
+          ...prev,
+          [step.structureChange!.level!]: new Set([...(prev[step.structureChange!.level!] || []), step.structureChange!.nodeId!])
+        }));
+      } else if (step.structureChange?.type === 'remove_level') {
+        setVisualHeight(prev => Math.max(1, prev - 1));
       }
 
       // Apply coloring/highlights
@@ -65,7 +74,7 @@ export default function SkipListVisualizer() {
     setNodeStates({});      // Clears all colors
     setActiveLevels({});   // Resets virtual node tracking
     setInsertingValue(null); // Removes the temporary column
-    
+    setDeletedNodes({});
     setIsAnimating(false);
     setCurrentMessage("Ready");
   };
@@ -148,6 +157,7 @@ export default function SkipListVisualizer() {
           nodeStates={nodeStates} 
           insertingValue={insertingValue} 
           activeLevels={activeLevels} 
+          deletedNodes={deletedNodes}
           visualHeight={visualHeight}
         />
 
