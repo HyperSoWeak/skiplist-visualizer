@@ -5,15 +5,18 @@
   "description": "Monorepo for a skip list visualizer backend and frontend placeholder",
   "packageManager": "pnpm@10.29.1",
   "scripts": {
-    "build": "pnpm --filter backend build",
-    "start:dev": "pnpm --filter backend start:dev",
-    "lint": "pnpm --filter backend lint",
+    "build": "pnpm -r build",
+    "dev": "concurrently \"pnpm --filter ./apps/backend start:dev\" \"pnpm --filter ./apps/frontend dev\"",
+    "lint": "pnpm -r lint",
     "test": "pnpm --filter backend test",
     "test:e2e": "pnpm --filter backend test:e2e",
-    "format": "pnpm --filter backend format"
+    "format": "pnpm -r format"
   },
   "engines": {
     "node": ">=22.0.0",
     "pnpm": ">=10.0.0"
+  },
+  "dependencies": {
+    "concurrently": "^9.2.1"
   }
 }

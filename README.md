@@ -7,14 +7,14 @@ This monorepo contains the backend service for a skip list visualizer and a rese
 ```text
 apps/
   backend/   NestJS backend with Swagger, skip list logic, and tests
-  frontend/  Placeholder directory only
+  frontend/  Vite React frontend, interative UI
 ```
 
 ## Quick Start
 
 ```bash
 pnpm install
-pnpm start:dev
+pnpm dev      # starts both backend and backend
 ```
 
 Backend API:
@@ -29,13 +29,19 @@ Swagger UI:
 http://localhost:3000/docs
 ```
 
+Frontend Dev endpoint
+
+```text
+http://127.0.0.1:5173/
+```
+
 ## Monorepo Scripts
 
 Run from the repository root:
 
 ```bash
 pnpm build
-pnpm start:dev
+pnpm dev
 pnpm lint
 pnpm test
 pnpm test:e2e
@@ -53,3 +59,4 @@ pnpm format
 
 - Backend guide: `apps/backend/README.md`
 - Interactive API docs: Swagger at `http://localhost:3000/docs`
+- Frontend guide: `apps/frontend/README.md`
