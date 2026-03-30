@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import SkipListVisualizer from './SkipListVisualizer';
+import SkipListVisualizer from '../components/SkipListVisualizer';
 
 describe('SkipListVisualizer', () => {
   afterEach(() => {
@@ -10,7 +10,9 @@ describe('SkipListVisualizer', () => {
   });
 
   it('renders a loading state before the backend state request resolves', () => {
-    vi.spyOn(globalThis, 'fetch').mockImplementation(() => new Promise(() => {}));
+    vi.spyOn(globalThis, 'fetch').mockImplementation(
+      () => new Promise(() => {}),
+    );
 
     render(<SkipListVisualizer />);
 
