@@ -57,6 +57,45 @@ describe('SkipList API (e2e)', () => {
     expect(body.values).toEqual([]);
   });
 
+  it('exposes the richer state payload used by the backend contract', async () => {
+    const response = await request(httpServer).get('/state').expect(200);
+    const body = stateBody(response);
+
+    expect(typeof body.nodeCount).toBe('number');
+    expect(body.configuredSeed).toBeNull();
+    expect(body.rngState).toBeNull();
+    expect(typeof body.levels[0]?.headId).toBe('string');
+    expect(typeof body.levels[0]?.tailId).toBe('string');
+    expect(Array.isArray(body.levels[0]?.nodeIds)).toBe(true);
+    expect(body.levels[0]?.nodes[0]?.prevId).toBeNull();
+    expect(body.levels[0]?.nodes[0]?.upId).toBeNull();
+    expect(body.levels[0]?.nodes[0]?.downId).toBeNull();
+  });
+
+  it('allows CORS for the documented frontend origin', async () => {
+    const response = await request(httpServer)
+      .get('/state')
+      .set('Origin', 'http://127.0.0.1:5173')
+      .expect(200);
+
+    expect(response.headers['access-control-allow-origin']).toBe(
+      'http://127.0.0.1:5173',
+    );
+  });
+
+  it('responds with a fixed 127.0.0.1 CORS origin even for localhost requests', async () => {
+    const response = await request(httpServer)
+      .get('/state')
+      .set('Origin', 'http://localhost:5173')
+      .expect(200);
+
+    expect(response.headers).toEqual(
+      expect.objectContaining({
+        'access-control-allow-origin': 'http://127.0.0.1:5173',
+      }),
+    );
+  });
+
   it('inserts with deterministic flip results and exposes the final structure', async () => {
     const body = await insertValue(42, [true, false]);
 
