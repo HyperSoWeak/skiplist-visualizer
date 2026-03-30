@@ -167,7 +167,7 @@ export default function SkipListVisualizer() {
 
   if (!skipList) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <p className="text-lg text-slate-600">Loading skip-list state...</p>
       </div>
     );
