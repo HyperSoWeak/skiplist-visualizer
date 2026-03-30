@@ -1,6 +1,6 @@
 # Skip List Visualizer Monorepo
 
-This monorepo contains the backend service for a skip list visualizer and a reserved frontend workspace for future work.
+This monorepo contains the backend service and frontend UI for a skip list visualizer.
 
 ## Workspace Layout
 
