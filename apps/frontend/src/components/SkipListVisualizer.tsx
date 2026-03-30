@@ -4,14 +4,13 @@ import {
   NodeVisualState,
   OperationResult,
 } from '../types/types';
-import { MOCK_INITIAL_STATE } from '../data/data';
 import { SkipListGrid } from './SkipListGrid';
 
 const API_BASE = 'http://localhost:3000';
 
 export default function SkipListVisualizer() {
-  const [skipList, setSkipList] = useState<SkipListState>(MOCK_INITIAL_STATE);
-  const [visualHeight, setVisualHeight] = useState(MOCK_INITIAL_STATE.height);
+  const [skipList, setSkipList] = useState<SkipListState | null>(null);
+  const [visualHeight, setVisualHeight] = useState(0);
   const [nodeStates, setNodeStates] = useState<Record<string, NodeVisualState>>(
     {},
   );
@@ -35,7 +34,7 @@ export default function SkipListVisualizer() {
     setInsertingValue(null);
     setDeletedNodes({});
     setActiveLevels({});
-    setVisualHeight(skipList.height);
+    setVisualHeight(skipList?.height || 0);
 
     for (const step of result.steps) {
       setCurrentMessage(step.message);
@@ -165,6 +164,14 @@ export default function SkipListVisualizer() {
     }
     fetchInitialState();
   }, []);
+
+  if (!skipList) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <p className="text-lg text-slate-600">Loading skip-list state...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 font-sans text-slate-800">
